@@ -1,4 +1,4 @@
-资源加载的正确做法：
+### 资源加载的正确做法：
 
 ```php
 function toFriend_assets() {
@@ -93,4 +93,17 @@ Wordpress在被选中的li上会加一个current-menu-item类，可以使用
 
 
 ### Wordpress 自定义Page 页面
+
+```PHP
+is_page( $page );
+$page 留空，判断当前是否为Page, $page 可填 相应page id 或 slug name，以判断是否是相应的page
+    <?php is_page( 'sample_page' ); ?>
+    
+为单独的一个Page自定义页面：
+   	在主题文件夹下建立 post-**.php, 其中**为该Page的id 或 slug name
+    
+为多个Page 自定义页面：
+    在主题文件夹下建立 任意名称的 php, 在首行需要加 /* Template Name: ??? */
+    编辑要使用这个模板的Page, 设置template即可
+```
 
