@@ -3,7 +3,8 @@
 ```php
 function toFriend_assets() {
     wp_enqueue_style( 'general', get_stylesheet_directory_uri() . '/css/general.css' );
-    wp_enqueue_script( 'app', get_stylesheet_directory_uri() . '/js/app.js' );
+    wp_register_script( 'latest-jQuery', get_stylesheet_directory_uri() . '/js/jQuery.js' );
+    wp_enqueue_script( 'app', get_stylesheet_directory_uri() . '/js/app.js', array('latest-jQuery') );
 }
 add_action( 'wp_enqueue_scripts', 'toFriend_assets' );
 ```
