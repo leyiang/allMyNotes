@@ -386,7 +386,11 @@ endif; ?>
         ));
 ```
 
-
+### wp_trim_words
+```php
+本函数会删除掉 img
+                                    <?php echo wp_trim_words( get_the_content(), 150 ); ?>
+```
 
 
 
