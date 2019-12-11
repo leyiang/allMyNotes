@@ -76,6 +76,23 @@ while( $row = $stmt->fetch() ) {
 
 
 
+##### Set Attribute while instantiate
+
+```php
+// See full setting list at https://www.php.net/manual/en/pdo.setattribute.php
+// See what is ATTR_PERSISTENT at https://stackoverflow.com/questions/23432948/fully-understanding-pdo-attr-persistent
+
+$options = array(
+	PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
+    PDO::ATTR_PERSISTENT => true
+);
+$pdo = new PDO($dsn, $user, $pass, $options);
+
+
+```
+
+
+
 ##### Fetch All Method
 
 ```php
