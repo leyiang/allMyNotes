@@ -221,7 +221,7 @@ $pdo = null;
 
 
 
-**Note: If you set PDO as PERSISTENT, PHP will not automatically close the connection **
+**Note: If you set PDO as PERSISTENT, PHP will not automatically close the connection**
 
 
 
