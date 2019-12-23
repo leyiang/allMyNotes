@@ -205,3 +205,23 @@ $stmt->execute([$limit]);
 $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 ```
 
+
+
+### 5. How to close a PDO connection
+
+Normally, we will close a database connection when we don't need it. If we want to close a PDO connection, we have to do the following:
+
+```php
+/* The connection remains active for the lifetime of that PDO object. To close the connection, you need to destroy the object by ensuring that all remaining references to it are deleted--you do this by assigning NULL to the variable that holds the object. If you don't do this explicitly, PHP will automatically close the connection when your script ends. */
+
+/* http://php.net/manual/en/pdo.connections.php */
+
+$pdo = null;
+```
+
+
+
+**Note: If you set PDO as PERSISTENT, PHP will not automatically close the connection **
+
+
+
