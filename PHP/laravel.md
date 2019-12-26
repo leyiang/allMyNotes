@@ -204,7 +204,7 @@ If we have a separate ```nav.blade.php``` file, and we need to include it in our
 MVC stands for Model, View, and Controller. It is easier for us to maintain the code if we use MVC. Here's how we can use a controller in Laravel.
 
 ```php
-kjkjkjjkkjjjjjjjjjjjjjjjjjjjjjjkkbbk// First, use this to create a controller
+// First, use this to create a controller
 // You can find it at /app/HTTP/Controllers/CustomersController.php
 // We usually capitalize the first letter as a naming convention
 php artisan make:controller CustomersController
@@ -379,7 +379,7 @@ In the previous section, we defined a **Customer model and migration**, let's tr
 Customer::all();
 
 // the all() method will return all the data from the database that related to this Customer model
-// I guess the all() method is inherited from the Model class
+// The all() method is inherited from the Model class
 ```
 
 In this case, the command output nothing but a empty square brace, that's **because** we didn't insert data in the Customer table.
@@ -560,3 +560,294 @@ Customer::where("id", 10);
 
 ```
 
+
+
+#### Scope In Laravel
+
+We can use where clause in our Controller like this:
+
+```php
+// Find all the customers that active equals to 1
+$activeCustomers = Customer::where("active", 1)->get();
+```
+
+However, it's a little **hard** to read. We can use **scope** in Laravel to cope with this.
+
+
+
+```php
+// In our Customers Model:
+// We **have** to follow the naming convention
+// start with `scope` and follow by your function name
+// the first letter of your function name need to be capitailzed
+public function scopeActive($query) {
+    return $query->where("active", 1);
+}
+
+// In the Controller
+// Just call the function name and without capiatlize	
+$activeCustomers = Customer::active()->get();
+
+```
+
+
+
+#### Simple way to Insert a row
+
+In examples above, we use these code in our controller to insert data:
+
+```php
+public function store() {
+    $data = request()->validate([
+        'name' => 'required|min:3',
+        'email' => "required|email",
+        "active" => "required"
+    ]);
+
+    $customer = new Customer();
+    $customer->name = request("name");
+    $customer->email = request("email");
+    $customer->active = request("active");
+    $customer->save();
+
+    return back();
+}
+```
+
+**However**, this is very redundant.
+
+```php
+// the data attribute has all the request
+// Like name, email
+$data = request()->validate([...]);
+
+// We can simply use this code to create a row
+Customer::create( $data );
+```
+
+And the whole function would be like:
+
+```php
+public function store() {
+    $data = request()->validate([
+        'name' => 'required|min:3',
+        'email' => "required|email",
+        "active" => "required"
+    ]);
+
+	Customer::create( $data );
+    
+    return back();
+}
+
+// However if we run the code directly, Laravel will throw an exception
+// That's because Laravel is protecting us from passing an array to create a row
+// If we want to do this whatever
+// We need to add some code in the **Cusotmer.php** the model file
+
+// 1) We can use $fillable array to tell Laravel don't throw exception if we use ::create function to create a row
+$fillable = ["name", "email", "active"];
+// The value in $fillable is the column we want to fill
+
+// 2) We can use $guarded array to tell Laravel what is forbidden
+// If we leave it empty, then laravel will accept everything
+$guarded = [];
+```
+
+
+
+#### The hasMany() & belongsTo() relation
+
+In our project, we want to give every customer a company attribute. **Then** we can  say oh you are from Google, you are from apple.
+
+To do this, we need to create a **Company Model**
+
+```php
+php artisan make:model Company -m
+```
+
+
+
+**Then**, let's change the migration of the company model
+
+```php
+// We add a name and a phone
+Schema::create('companies', function (Blueprint $table) {
+    $table->bigIncrements('id');
+    $table->string("name");
+    $table->string("phone");
+    $table->timestamps();
+});
+```
+
+
+
+After that, **migrate** the database
+
+```php
+// This command will make you lose all your data
+php artisan migrate:fresh
+```
+
+
+
+Now that we have a **Company Model and Company table**, let add some data
+
+```php
+php artisan tinker
+
+// To use this command
+// Don't forget to set the protected $guarded to empty
+$c = Company::create(["name"=>"ABC Company", "phone"=>"123-123-1234"])
+```
+
+
+
+Right now we have **two models**(Customer & Company), let's link them together
+
+1) In the Company Model, add a function called ```customers```
+
+```php
+public function customers() {
+    // Customer::class is the model you want to link
+    return $this->hasMany(Customer::class);
+}
+```
+
+This function will return **ALL** the customers that belongs to this company
+
+
+
+If we run it in the tinker, we will get an error
+
+```php
+$c = Company::first()
+$c->customers
+// Notice that we call the customers as a property, not a method
+    
+// We will get
+//Illuminate/Database/QueryException with message 'SQLSTATE[42S22]: Column not found: 1054 Unknown column 'customers.company_id' in 'where clause' (SQL: select * from `customers` where `
+```
+
+
+
+It means in the ```Customer Migration``` We need to  have an column called ```company_id``
+
+Let change the migration and try it.
+
+```php
+/* ... */
+$table->unsignedInteger('company_id');
+/* ... */
+```
+
+Try run the command again you will notice it works.
+
+
+
+In the Customer model, we can also add a function called ```company```
+
+```php
+public function company() {
+    return $this->belongsTo(Company::class);
+}
+```
+
+It will return the company it belongs to.
+
+
+
+#### Accessor
+
+While we using some properties, we may need to pre-process it
+
+```php
+// This will output 0 or 1
+{{ $customer->active }}
+
+// We want it to be Inactive or Active
+// So we can do this:
+{{ $customer->active ? "Active" : "Inactive" }}
+```
+
+However, there is a **even better** way to do this.
+
+In the **Customer Model**
+
+```php
+// Naming convention: get + {ATTR NAME} + Attribute
+// $attribute parameter is the value of this attribute
+public function getActiveAttribute($attribute) {
+	return [
+		0 => "Inactive",
+		1 => "Active"
+	][$attribute];
+}
+```
+
+
+
+#### RESTful controller
+
+Basically we need to follow some pattern in order to make our code cleaner.
+
+See at https://laravel.com/docs/6.x/controllers#resource-controllers
+
+
+
+```php
+Route::get("/customers/{customer}", "CustomersController@show")
+    
+// If we access the path : /customers/123
+// We can get a variable called $customer with value 123
+```
+
+
+
+We can display the user detail info
+
+In the **controller**
+
+```php
+public function show($customer) {
+    // the $customer are the var in the path
+    // We can use find() method to find the user's info
+    // It requires the id
+    $user = Customer::find($customer);
+    return view("customers.show", compact("customers"));
+}
+
+// In this way, the `show` view can get the customer info
+```
+
+However, if we access a path that is not a **valid** user id like ```/customers/399``
+
+Our page will break completely, to fix this:
+
+```php
+public function show($customer) {
+	// We use this to prevent our page from break
+    $user = Customer::where("id", $customer)->firstOrFail();
+    return view("customers.show", compact("customers"));
+}
+```
+
+
+
+**Attention**
+
+In Laravel, if the name defined in ``web.app`` is the same in ``controller``, we can use short hand method
+
+```php
+// In the web.php
+Route::get("/customers/{customer}", "CustomersController@show")
+// Notice what we put in the curly braces: customer
+    
+    
+// In the controller
+public function show(Customer $customer) {
+    return view("customers.show", compact("customer"));
+}
+```
+
+It will do the same as the **where** clause does
