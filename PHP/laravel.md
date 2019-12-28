@@ -18,6 +18,16 @@ The program snippet above will show the **welcome view** when users link the roo
 
 
 
+#### List all the routes
+
+```
+php artisan route:list
+```
+
+This command will show you all the routes that are using right now.
+
+
+
 ***
 
 
@@ -195,6 +205,40 @@ If we have a separate ```nav.blade.php``` file, and we need to include it in our
 
 
 
+#### Using Flashing Data
+
+When a user did something, we need to give them feedback. To do this, we can use flashing data.
+
+```php
+// While return a redirect
+// Using with statement
+
+return redirect("contact")->with("message", "Message content here");
+
+// And in the View
+// Use this msg like this
+
+@if( session()->has("message") )
+	<div class="alert alert-success">
+    	<strong>Success</strong> {{ session()->get("message") }}
+    </div>
+@endif
+```
+
+
+
+And there's another way to use flashing data
+
+```php
+session()->flash("message", "Message content here");
+return redirect("contact");
+
+// In the view page
+// We use the message as above
+```
+
+
+
 ***
 
 
@@ -284,6 +328,107 @@ return view("customers", compact("test1", "test2"));
 ```
 
 
+
+#### Middleware
+
+Middleware is something that stands between the **request** and the **response**
+
+There are two ways you can apply a middleware
+
+First
+
+```php
+// In web.php
+
+Route::resource("customers", "CustomersController")->middleware("auth");
+
+// Just add the trailing ->middleware("auth")
+```
+
+
+
+**Or** you can put middleware in your controller
+
+```php
+public function __construct() {
+	$this->middleware("auth");
+}
+```
+
+
+
+##### Custom Middleware
+
+First:
+
+```php
+php artisan make:middleware <name>
+```
+
+Find your Middleware in ```App\Middleware\<name>.php```
+
+
+
+**register**
+
+Open the ```App\Http\Kernel.php```
+
+
+
+If you put your middleware in here:
+
+```php
+protected $middleware = [
+    \App\Http\Middleware\TrustProxies::class,
+    \App\Http\Middleware\CheckForMaintenanceMode::class,
+    \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+    \App\Http\Middleware\TrimStrings::class,
+    \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+];
+```
+
+Every single page will run your middleware;
+
+
+
+If you put your middleware in here
+
+```php
+protected $middlewareGroups = [
+    'web' => [
+        \App\Http\Middleware\EncryptCookies::class,
+        \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        // \Illuminate\Session\Middleware\AuthenticateSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \App\Http\Middleware\VerifyCsrfToken::class,
+        \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    ]
+];
+```
+
+Every single page that locates in ```web route``` will hit your middleware
+
+
+
+If you put your middleware here
+
+```php
+protected $routeMiddleware = [
+    'auth' => \App\Http\Middleware\Authenticate::class,
+    'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
+    'bindings' => \Illuminate\Routing\Middleware\SubstituteBindings::class,
+    'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
+    'can' => \Illuminate\Auth\Middleware\Authorize::class,
+    'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+    'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+    'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+    'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+];
+// key=>value, key is your middleware name
+```
+
+Your middleware will be ran only if someone apply it ( Using ->middleware("name") );
 
 ***
 
@@ -851,3 +996,72 @@ public function show(Customer $customer) {
 ```
 
 It will do the same as the **where** clause does
+
+
+
+**After** You complete all the actions the **RESTful api** described, you will have this many routes:
+
+```php
+Route::get("/customers", "CustomersController@index" );
+Route::post("/customers", "CustomersController@store");
+Route::get("/customers/create", "CustomersController@create" );
+Route::get("/customers/{customer}", "CustomersController@show");
+Route::get("/customers/{customer}/edit", "CustomersController@edit");
+Route::patch("/customers/{customer}", "CustomersController@update");
+Route::delete("/customers/{customer}", "CustomersController@destory");
+```
+
+However if you follow **all** the rules RESTful says, you can using one line code to exchange it
+
+```php
+//Route::get("/customers", "CustomersController@index" );
+//Route::post("/customers", "CustomersController@store");
+//Route::get("/customers/create", "CustomersController@create" );
+//Route::get("/customers/{customer}", "CustomersController@show");
+//Route::get("/customers/{customer}/edit", "CustomersController@edit");
+//Route::patch("/customers/{customer}", "CustomersController@update");
+//Route::delete("/customers/{customer}", "CustomersController@destory");
+
+
+/** Using This **/
+/** Using This **/
+/** Using This **/
+/** Using This **/
+
+Route::resource("customers", "CustomersController");
+```
+
+
+
+And while you create a new controller, you can let Laravel to create all the **method(index, create, store)** for you.
+
+```php
+// Where test is the model name
+// you can omit it
+php artisan make:controller TestController -r -m Test
+```
+
+
+
+### Handy Laravel Features
+
+#### Auth
+
+Most websites will have login and register. If you want your websites to have it, Laravel done the most part of it for you.
+
+You just need to run the command
+
+```php
+php artisan make:auth
+```
+
+
+
+**In this way**, you will have many pre defined **view & controller & model** available for you.
+
+You can just simply change it. If you don't know which **Route** the auth goes. Don't forget to use
+
+```php
+php artisan route:list
+```
+
