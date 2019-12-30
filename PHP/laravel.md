@@ -36,6 +36,42 @@ This command will show you all the routes that are using right now.
 
 
 
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+
+
+If your Laravel not working as you defined
+
+That is because the **cache**
+
+```php artisan config:clear```
+
+
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+
+
 #### Explain
 
 Views are eventually the things that will be rendered on the page. It contains HTML and other front-end codes.
@@ -979,6 +1015,42 @@ public function show($customer) {
 
 
 
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+
+
+If your Laravel not working as you defined
+
+That is because the **cache**
+
+```php artisan config:clear```
+
+
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+
+
 **Attention**
 
 In Laravel, if the name defined in ``web.app`` is the same in ``controller``, we can use short hand method
@@ -1296,3 +1368,92 @@ php artisan event:generate
 ```
 
 You will notice that the Laravel actually does this for us. So this can be a shortcut when we declare a new Listener.
+
+
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+
+
+If your Laravel not working as you defined
+
+That is because the **cache**
+
+```php artisan config:clear```
+
+
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+**VERY IMPORTANT!**
+
+
+
+### Laravel Queue
+
+While we are sending an email to our user. The page is not doing anything, and that give user a bad experience. Nevertheless, we can use **queue** to reduce the bad experience.
+
+#### Create Queue table
+
+```php
+php artisan queue:table
+php artisan migrate
+```
+
+First we need to use the snippet above to create a queue table
+
+#### Implement the ```ShouldQueue```
+
+In the Listeners that we don't want them to run immediately, **implement it with `ShouldQueue`**
+
+```php
+class WelcomeNewCustomerListener implements ShouldQueue {
+
+    public function handle($event) {
+        Mail::to( $event->customer->email )->send( new WelcomeNewUserMail());
+    }
+}
+```
+
+Don't forget to configure the `.env file` in your project fold, change the `QUEUE_CONNECTION=sync` to `QUEUE_CONNECTION=database`
+
+#### Run Queue Tasks
+
+Then if you trigger your event again, you will notice that the listeners you implemented as `ShouldQueue` is not working.
+
+However if you go check the `job` table that the `queue:table` created, you will notice that there's a new  row of information has been inserted.
+
+To run this, you need to run:
+
+```php
+php artisan queue:work
+```
+
+This will monitor the `job` database, every time there's job for it to do, it will do it and delete the job from the `job` database.
+
+
+
+If you add an ampersand after the code, you can make the `queue:work` work in the background
+
+```php
+php artisan queue:work &
+    // However it doesn't work for my computer;
+```
