@@ -1065,3 +1065,68 @@ You can just simply change it. If you don't know which **Route** the auth goes. 
 php artisan route:list
 ```
 
+
+
+#### Url helpers
+
+* ```url()```
+
+  ```php+html
+  <form action="{{ url("/contact") }}" method="POST">
+  ...
+      
+  // The url("/contact") will eventually become
+  => http://localhost/laravel/first/contact (Only in my case)
+      
+  However if we put "/contact" without url helper in form action
+  => http://localhost/contact
+  
+  We will get this
+  And this is not what we want
+  ```
+
+* Named routes ``route()`` (preferred)
+
+  ```php
+  // How to add a name to a route
+  Route::get("contact", "ContactForm@create")->name("contact.create");
+  
+  // Just add the tailing ->name() to the route
+  // the parapeter in it is the name you gave the route
+  // By convention we call it `path.method`
+  
+  //Then in the view
+  {{ route("contact.create") }}
+  // This line of code can get the route that we named
+  
+  // If you are using the RESTful api
+  Route::resource("customers", "CustomersController");
+  // Laravel already named all the routes for you
+  // You can see it by using the command: 
+  php artisan route:list
+      
+      
+      
+  // If we wanna pass data in url
+  // Like /customers/1 where 1 is the id of the customer
+  // In the route function, we can do this
+  route("contact.create", ["customer" => $customer]);
+  // The $customer is a variable that stores the $customer
+  // Laravel is smart enough to find which attribute do you want
+  // In the route you write like this: customers/{customer}
+  // This {customer} represents the ["customer" => $customer] in the quotation mark
+  ```
+
+* ```action()```
+
+  ```php
+  // We can just simple pass the Controller@method into action
+  action("CustomerController@index");
+  // It will automatically find the controller@method in our web.php and find which path it belongs to
+  
+  // In this way, your IDE might not get the definition of your Controller (Ctrl + click on the name)
+  // We can use an alternative way to do this
+  action([ \App\Http\Controllers\CustomerController::class, 'index']);
+  // This code does the sme thing as the code above
+  // However it enables you do find the Controller definition quicly
+  ```
