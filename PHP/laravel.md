@@ -999,7 +999,7 @@ It will do the same as the **where** clause does
 
 
 
-**After** You complete all the actions the **RESTful api** described, you will have this many routes:
+**After** You complete all the actions the **RESTful API** described, you will have this many routes:
 
 ```php
 Route::get("/customers", "CustomersController@index" );
@@ -1130,3 +1130,169 @@ php artisan route:list
   // This code does the sme thing as the code above
   // However it enables you do find the Controller definition quicly
   ```
+
+
+
+### Using Node.js In Laravel
+
+#### Install
+
+```php
+// First of all, make sure the node and npm is intalled in your computer
+// You can run node -v and npm -v
+// The return value should be some kind of version string
+
+npm install
+// This command will install all the dependencies that you specify in the package.json file
+    
+// After the npm install has completed, a new folder has been created that is called node_modules, In this folder npm store tons of thousands of packages for us
+```
+
+
+
+#### Compile
+
+In the ```/resources/js```, we have an ```app.js```, we can **write** and **include** our JS code in here.
+
+And in the ```/resources/sass```, we can find a ```app.scss```, we can **write** and **include** our CSS code in here. 
+
+**NOTICE**  we **need** to run ``npm run dev``  so our ``js`` and ``sass`` will be compiled and put in the ```/public/js``` and ```/public/css``` respectively.
+
+
+##### npm run watch
+
+If we are developing our website, and we need to patch our ``JS`` and ``CSS`` code now and then, we can ``` npm run watch```, so that every time you save the file, npm will re-compile the file again.
+
+
+
+#### ERRORS
+
+Sometimes we run ```npm run dev``` or ```npm run watch``` will encounter many **ERRs**. To fix this, we need to delete all the ``/node_modules`` folder and then re-run the ```npm install```
+
+```rm -rf node_modules && npm install```
+
+
+
+### Events
+
+#### Intro
+
+Typically when a user register to our websites. We will do the following steps:
+
+```php
+1. Send a welcome email
+2. Add the user to a subscribe list
+3. Notify the admin
+```
+
+We can put all of this steps in to your Controller in the store method.
+
+**However**, we don't usually do this.
+
+We need to use **Event** and **Listener**.
+
+
+
+#### Create a Event
+
+```php
+php artisan make:event TheNameOfYourEvent
+```
+
+Then you can find your event in the ```/App/Events``` folder
+
+
+
+#### Use this event
+
+```php
+// In your controller
+public function store() {
+    ...
+      
+	event( new TheNameOfYourEvent($something) );
+	...
+}
+```
+
+**Notice** the ``$something`` is the variables you wanna pass in to the event. And you need to receive it in your event file like this:
+
+```php
+// You can set $something as private
+// But if you set as public
+// You can use $something directly in your listener
+public $something;
+
+public function __construct($something) {
+    $this->something = $something;
+}
+```
+
+
+
+#### Create Listener
+
+If you try to register a new user, you will find out that nothing novel happens. That's **because** we didn't add any listener yet.
+
+Consider the **Event** as things what **Users** done( like register ), and the **Listener** are the things **We as the website** would do (Like send a welcome email )**AFTER** users triggered some events.
+
+```php
+php artisan make:listener TheNameOfYourListener
+```
+
+Then you can **find** your listener in the ```/App/Listeners``` folder.
+
+We can put our code in  the **handle()** method
+
+```php
+public function handle($event) {
+    // anything
+}
+
+// If you wanna use the $something we passed into the event file
+// Do it like this:
+$event->something;
+```
+
+
+
+#### Map Event and Listeners
+
+If you try to registered a new user again, you will notice again that the things still work the **same**.
+
+That's because we didn't **map** the **event** and **listener**.
+
+Find the ```/App/Providers/EventServiceProvider.php```, then add our mapping code in the **listen** method like this:
+
+```php
+protected $listen = [
+    ...,
+    TheNameOfYourEvent::class => [
+     	\App\Listeners\TheNameOfYourListener::class  
+    ];
+]
+```
+
+That will complete the whole process.
+
+
+
+If we add a new line of listener that **doesn't** exists in our folder like this
+
+```php
+protected $listen = [
+    ...,
+    TheNameOfYourEvent::class => [
+     	\App\Listeners\TheNameOfYourListener::class,
+        \App\Listeners\DoesNotExistListener::class
+    ];
+]
+```
+
+And run the **command** 
+
+```php
+php artisan event:generate
+```
+
+You will notice that the Laravel actually does this for us. So this can be a shortcut when we declare a new Listener.
