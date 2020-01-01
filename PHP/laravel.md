@@ -1205,6 +1205,175 @@ php artisan route:list
 
 
 
+#### Add Laravel custom artisan command
+
+```php
+php artisan make:command <Command Name>
+```
+
+After you ran this code, you can find your `Command Name.php` in the `\App\Console\Commands\` Folder.
+
+##### Signature
+
+The signature is what your command will look like.
+
+
+
+If you setup your signature like this
+You will type `php artisan product:add` in your command
+
+```php
+protected $signature = 'product:add';
+```
+
+
+
+This is how your add a **required** argument
+
+```php
+protected $signature = 'product:add {name}';
+```
+
+This is how your add an **optional** argument
+
+```php
+protected $signature = "product:add {name?}"
+```
+
+Or
+
+```php
+protected $signature = "product:add {name=haha}"
+```
+
+
+
+##### The description
+
+```php
+protected $description = 'Add a dummy product quickly.';
+```
+
+The `$description` will be displayed if you use `help` command
+
+
+
+##### The handle function
+
+The handle function will be fired when you run `php artisan product:add`
+
+```php
+public function handle() {
+    $product = Product::create([
+        "name" => $this->argument("name"),
+        "user_id" => 1,
+        "description" => $this->argument("description"),
+        "price" => 123.2,
+        "stock" => 10
+    ]);
+}
+```
+
+You can do **Anything** in your handle function.
+
+**Notice** How we use the argument that passed in through the command line.
+
+```php
+$this->argument("name");
+```
+
+
+
+##### Return infos
+
+In the handle function, you can return info by using function below
+
+```php
+$this->info("Added " . $product->name);
+//$this->warn("Product created successfully");
+//$this->error("Product created successfully");
+```
+
+
+
+##### Get info from user
+
+```php
+$name = $this->ask("What is the product name");
+```
+
+While users run the `php artisan make:product`, the code above will ask users the product name. And the value will store in the `$name` variable.
+
+
+
+##### Confirm
+
+```php
+if( $this->confirm("Are you ready to insert?") ) {
+    // Insert codes...
+}
+```
+
+Our command will ask  users if they are willing to run the code.
+
+If so, the ``Insert Codes`` will be fired.
+
+##### Create command in console.php
+
+Sometimes a command only do a little things. We don't need it to be a **single** class. We can put it in console.php
+
+```php
+/app/routes/console.php
+```
+
+Add code like this:
+
+```php
+Artisan::command("test", function() {
+    $this->info("hahahaha");
+});
+```
+
+The first argument is the **name of the command**, the second argument is basically the **handle function**
+
+So if you run `php artisan test`, you will get `hahahaha`
+
+
+
+If you wanna pass **description**, do this
+
+```php
+Artisan::command("test", function() {
+    $this->info("hahahaha");
+})->describe("This is a command just for testing.");
+```
+
+
+
+You can also use **argument**
+
+```php
+Artisan::command("test {name}", function() {
+    $name = $this->argument("name");
+    $this->info( $name );
+});
+```
+
+
+
+**Fancy syntax**
+
+```php
+Company::whereDoesntHave("customers")
+    ->get()
+    ->each( function($company){
+        $company->delete();
+        $this->warn("Deleted." . $company->name);
+    });
+```
+
+
+
 ### Using Node.js In Laravel
 
 #### Install
@@ -1457,3 +1626,4 @@ If you add an ampersand after the code, you can make the `queue:work` work in th
 php artisan queue:work &
     // However it doesn't work for my computer;
 ```
+
