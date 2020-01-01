@@ -734,6 +734,9 @@ In the value attribute we will put ```old("test")```, the ```test``` is the valu
 // In the examples above, we fetch all the data in database
 Customer::all();
 
+// This code will fetch the names of all users
+Customer::all()->pluck("name");
+
 // However in some cases, we don't want all the data
 // We want, say, customers whose id equals to 10
 // This is how we can do it
@@ -823,7 +826,7 @@ public function store() {
 
 // However if we run the code directly, Laravel will throw an exception
 // That's because Laravel is protecting us from passing an array to create a row
-// If we want to do this whatever
+// If we want to do this anyway
 // We need to add some code in the **Cusotmer.php** the model file
 
 // 1) We can use $fillable array to tell Laravel don't throw exception if we use ::create function to create a row
@@ -1213,6 +1216,12 @@ php artisan make:command <Command Name>
 
 After you ran this code, you can find your `Command Name.php` in the `\App\Console\Commands\` Folder.
 
+
+
+***
+
+
+
 ##### Signature
 
 The signature is what your command will look like.
@@ -1248,6 +1257,10 @@ protected $signature = "product:add {name=haha}"
 
 
 
+***
+
+
+
 ##### The description
 
 ```php
@@ -1255,6 +1268,10 @@ protected $description = 'Add a dummy product quickly.';
 ```
 
 The `$description` will be displayed if you use `help` command
+
+
+
+***
 
 
 
@@ -1284,7 +1301,11 @@ $this->argument("name");
 
 
 
-##### Return infos
+***
+
+
+
+##### Return Info
 
 In the handle function, you can return info by using function below
 
@@ -1296,6 +1317,10 @@ $this->info("Added " . $product->name);
 
 
 
+***
+
+
+
 ##### Get info from user
 
 ```php
@@ -1303,6 +1328,10 @@ $name = $this->ask("What is the product name");
 ```
 
 While users run the `php artisan make:product`, the code above will ask users the product name. And the value will store in the `$name` variable.
+
+
+
+***
 
 
 
@@ -1317,6 +1346,12 @@ if( $this->confirm("Are you ready to insert?") ) {
 Our command will ask  users if they are willing to run the code.
 
 If so, the ``Insert Codes`` will be fired.
+
+
+
+***
+
+
 
 ##### Create command in console.php
 
@@ -1361,6 +1396,10 @@ Artisan::command("test {name}", function() {
 
 
 
+***
+
+
+
 **Fancy syntax**
 
 ```php
@@ -1371,6 +1410,161 @@ Company::whereDoesntHave("customers")
         $this->warn("Deleted." . $company->name);
     });
 ```
+
+
+
+***
+
+
+
+#### Using factory
+
+##### How to use
+
+```php
+factory(\App\User::class)->create();
+```
+
+
+
+**Create Multiple users**
+
+```php
+// Create 4 users using fake datan
+factory(\App\User::class, 4)->create();
+```
+
+
+
+***
+
+
+
+##### Create custom factory
+
+```php
+php artisan make:factory <FactoryName> [-m ModelName]
+```
+
+You can find `/app/database/factories/FactoryName.php`
+
+```php
+$factory->define(Product::class, function (Faker $faker) {
+    return [
+        "user_id" => 1,
+        "name" => $faker->name,
+        "description" => $faker->text,
+        "price" => $faker->numberBetween(10, 20),
+        "stock" => $faker->numberBetween(1, 10)
+    ];
+});
+```
+
+This is an example.
+
+**And** we can calling the factory in a factory
+
+```php
+$factory->define(Product::class, function (Faker $faker) {
+    return [
+        // Here we only want the new user's id
+        // But we don't need to specify
+        // Laravel will do this
+        "user_id" => factory(User::class)->create(),
+        "name" => $faker->name,
+        "description" => $faker->text,
+        "price" => $faker->numberBetween(10, 20),
+        "stock" => $faker->numberBetween(1, 10)
+    ];
+});
+```
+
+
+
+***
+
+
+
+#### Seeder
+
+In `/app/database/seeds/DatabaseSeeder.php` **run** method
+
+You can add some code in here, and if you run `php artisan db:seed`, Laravel will insert some data as you pre-defined
+
+```php
+public function run() {
+        \App\Tag::create([
+            "name" => "Toy"
+        ]);
+}
+```
+
+
+
+**However** we don't usually do this. We usually create another **class**, and just invoke that class in here.
+
+```php
+php artisan make:seeder <SeederName>
+    // The naming convention for Seeder is ModelName(plural) + TableSeeder
+```
+
+Then put all your code in your new Seeder's run method
+
+
+
+```php
+class ProductsTableSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run() {
+        //
+        \App\Product::create([
+            "name" => "This is my another product",
+            "user_id" => 1,
+            "price" => 99.9,
+            "stock" => 10,
+            "description" => "This is the description for my first product please buy it."
+        ]);
+    }
+}
+```
+
+
+
+**Then** In the `DatabaseSeeder.php`, you write `$this->call(ProductsTableSeeder::class);`, this will run the `run()` method automatically.
+
+
+
+You can also use ``Factory``
+
+```php
+public function run() {
+    //
+    //        \App\Product::create([
+    //            "name" => "This is my another product",
+    //            "user_id" => 1,
+    //            "price" => 99.9,
+    //            "stock" => 10,
+    //            "description" => "This is the description for my first product please buy it."
+    //        ]);
+
+    factory( \App\Product::class )->create();
+}
+```
+
+
+
+**After** all your setups, run ``php artisan db:seed``
+
+And you can do `php artisan migrate --seed` as well
+
+
+
+***
 
 
 
@@ -1559,6 +1753,12 @@ If your Laravel not working as you defined
 That is because the **cache**
 
 ```php artisan config:clear```
+
+
+
+If get weird not find error
+
+run `composer dump-autoload`
 
 
 
