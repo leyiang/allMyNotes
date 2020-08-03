@@ -2,8 +2,8 @@
 
 - What is a heap
 ```
-Heap is a data structure is design for Heap sort.
-It essentially represent an array as a complete binary tree.
+Heap is essentially a representation of an array.
+It present an array as a complete binary tree
 ```
 
 ![Heap Demo](https://www.cdn.geeksforgeeks.org/wp-content/uploads/binaryheap.png)
